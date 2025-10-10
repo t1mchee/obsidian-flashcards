@@ -1,6 +1,9 @@
 # Obsidian Flashcards
 
 🎴 Anki-style spaced repetition flashcard app for your Obsidian markdown notes.
+<img width="1920" height="954" alt="image" src="https://github.com/user-attachments/assets/68b2af5f-9940-41b6-95ba-13c59e7d79d9" />
+<img width="1920" height="954" alt="image" src="https://github.com/user-attachments/assets/19835fc9-b22d-489d-96c2-2c8e1edfc4b4" />
+
 
 ## Features
 
