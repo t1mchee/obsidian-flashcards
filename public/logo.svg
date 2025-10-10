@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="Obsidian Flashcards logo - more space below icon">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#0B0B0B"/>
+
+  <!-- Card frame (unchanged) -->
+  <g id="card">
+    <rect x="80" y="60" width="864" height="664" rx="64" ry="64" fill="none" stroke="#FFFFFF" stroke-width="32" stroke-linejoin="round"/>
+    <rect x="60" y="360" width="40" height="96" rx="12" ry="12" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Mineral centered and scaled -->
+  <g id="mineral" transform="translate(512,392) scale(2.0)">
+    <path d="M0 -120 L60 -40 L40 80 L0 120 L-50 80 L-90 10 Z" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M0 -120 L0 120" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M60 -40 L-50 80" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M-90 10 L40 80" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+  </g>
+
+  <!-- Wordmark moved slightly lower -->
+  <g id="wordmark">
+    <text x="512" y="850" text-anchor="middle" font-family="Inter, Roboto, Arial, sans-serif" font-weight="800" font-size="96" fill="#FFFFFF" letter-spacing="6">OBSIDIAN</text>
+    <text x="512" y="930" text-anchor="middle" font-family="Inter, Roboto, Arial, sans-serif" font-weight="600" font-size="52" fill="#FFFFFF" letter-spacing="6">FLASHCARDS</text>
+  </g>
+</svg>

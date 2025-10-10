@@ -1,0 +1,206 @@
+.app {
+  min-height: 100vh;
+  background: #1e1e1e;
+}
+
+.review-container {
+  min-height: 100vh;
+  background: #1e1e1e;
+  display: flex;
+  flex-direction: row;
+}
+
+.review-sidebar {
+  background: #2d2d2d;
+  width: 80px;
+  min-width: 80px;
+  padding: 1.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+  border-right: 1px solid #3e3e3e;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.exit-btn {
+  background: #3e3e3e;
+  color: #cccccc;
+  border: 1px solid #4e4e4e;
+  border-radius: 6px;
+  padding: 0.5rem;
+  font-size: 0;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  width: 100%;
+}
+
+.exit-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.exit-btn:hover {
+  background: #4e4e4e;
+  border-color: #5e5e5e;
+}
+
+.progress-info-vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.progress-text {
+  font-weight: 600;
+  color: #cccccc;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.progress-bar-vertical {
+  background: #3e3e3e;
+  border-radius: 10px;
+  width: 8px;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  min-height: 200px;
+}
+
+.progress-fill-vertical {
+  background: #007acc;
+  width: 100%;
+  transition: height 0.3s ease;
+  border-radius: 10px;
+  position: absolute;
+  bottom: 0;
+}
+
+.card-container {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+  height: 100vh;
+}
+
+.review-complete {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.complete-content {
+  background: #2d2d2d;
+  border: 1px solid #3e3e3e;
+  border-radius: 12px;
+  padding: 3rem;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  max-width: 500px;
+  margin: 2rem;
+  animation: slideIn 0.3s ease-out;
+}
+
+.complete-icon {
+  color: #ff8c42;
+  margin-bottom: 1.5rem;
+}
+
+.complete-content h2 {
+  font-size: 2rem;
+  color: #cccccc;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.complete-content p {
+  font-size: 1.1rem;
+  color: #999999;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.primary-btn {
+  background: #007acc;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.primary-btn:hover {
+  background: #0098ff;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .review-header {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .progress-info {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .card-container {
+    padding: 0;
+    height: calc(100vh - 60px);
+  }
+  
+  .complete-content {
+    padding: 2rem;
+    margin: 1rem;
+  }
+  
+  .complete-content h2 {
+    font-size: 1.5rem;
+  }
+  
+  .complete-content p {
+    font-size: 1rem;
+  }
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

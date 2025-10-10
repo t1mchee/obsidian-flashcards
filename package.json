@@ -1,0 +1,36 @@
+{
+  "name": "obsidian-flashcards",
+  "version": "1.0.0",
+  "description": "Anki-style spaced repetition app using Obsidian markdown files",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "date-fns": "^2.30.0",
+    "gray-matter": "^4.0.3",
+    "js-yaml": "^4.1.0",
+    "lucide-react": "^0.294.0",
+    "mathjax-full": "^3.2.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-markdown": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "@vitejs/plugin-react": "^4.1.1",
+    "vite": "^7.1.9"
+  },
+  "keywords": [
+    "flashcards",
+    "spaced-repetition",
+    "anki",
+    "obsidian",
+    "react"
+  ],
+  "author": "Tim",
+  "license": "MIT"
+}

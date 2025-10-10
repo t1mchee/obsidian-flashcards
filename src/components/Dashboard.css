@@ -1,0 +1,379 @@
+.dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.app-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.dashboard-header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #cccccc;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.icon-btn {
+  background: #3e3e3e;
+  color: #cccccc;
+  border: 1px solid #4e4e4e;
+  border-radius: 6px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: #4e4e4e;
+  border-color: #5e5e5e;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: #2d2d2d;
+  border: 1px solid #3e3e3e;
+  border-radius: 12px;
+}
+
+.empty-icon {
+  color: #007acc;
+  margin-bottom: 1.5rem;
+}
+
+.empty-state h2 {
+  font-size: 1.5rem;
+  color: #cccccc;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.empty-state p {
+  font-size: 1rem;
+  color: #999999;
+  margin-bottom: 2rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: #2d2d2d;
+  border: 1px solid #3e3e3e;
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+  background: #3e3e3e;
+  border-color: #4e4e4e;
+}
+
+.stat-icon {
+  background: #007acc;
+  color: white;
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #cccccc;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #999999;
+  font-weight: 500;
+}
+
+.progress-section {
+  background: #2d2d2d;
+  border: 1px solid #3e3e3e;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.progress-section h3 {
+  font-size: 1.3rem;
+  color: #cccccc;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.progress-bar {
+  background: #3e3e3e;
+  border-radius: 10px;
+  height: 12px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, #007acc 0%, #ff8c42 100%);
+  height: 100%;
+  transition: width 0.3s ease;
+  border-radius: 10px;
+}
+
+.progress-text {
+  font-size: 1.1rem;
+  color: #e0e0e0;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.accuracy-text {
+  font-size: 1rem;
+  color: #ff8c42;
+  font-weight: 600;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.primary-btn, .secondary-btn {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  min-width: 160px;
+  justify-content: center;
+}
+
+.primary-btn {
+  background: #007acc;
+  color: white;
+  border: 1px solid #0098ff;
+  box-shadow: 0 2px 8px rgba(0, 122, 204, 0.3);
+}
+
+.primary-btn:hover:not(:disabled) {
+  background: #0098ff;
+  border-color: #00b8ff;
+  box-shadow: 0 4px 12px rgba(0, 122, 204, 0.4);
+}
+
+.primary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondary-btn {
+  background: #3e3e3e;
+  color: #cccccc;
+  border: 1px solid #4e4e4e;
+}
+
+.secondary-btn:hover:not(:disabled) {
+  background: #4e4e4e;
+  border-color: #5e5e5e;
+}
+
+.secondary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.primary-btn.large, .secondary-btn.large {
+  padding: 1.25rem 2.5rem;
+  font-size: 1.1rem;
+}
+
+.select-cards-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.danger-btn {
+  background: #f14c4c;
+  color: white;
+  border: 1px solid #ff6b6b;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.danger-btn:hover {
+  background: #ff6b6b;
+  border-color: #ff8787;
+}
+
+.settings-panel {
+  background: #2d2d2d;
+  border: 1px solid #3e3e3e;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-top: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.settings-panel h3 {
+  font-size: 1.5rem;
+  color: #cccccc;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.setting-group {
+  margin-bottom: 1.5rem;
+}
+
+.setting-group label {
+  display: block;
+  font-size: 1rem;
+  color: #cccccc;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.setting-group input[type="number"] {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #4e4e4e;
+  background: #3e3e3e;
+  color: #cccccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.setting-group input[type="number"]:focus {
+  outline: none;
+  border-color: #007acc;
+  background: #2d2d2d;
+}
+
+.setting-group input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+.settings-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #3e3e3e;
+}
+
+.file-input-btn {
+  background: #3e3e3e;
+  color: #cccccc;
+  border: 1px solid #4e4e4e;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.file-input-btn:hover {
+  background: #4e4e4e;
+  border-color: #5e5e5e;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 1rem;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 2rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .primary-btn, .secondary-btn {
+    min-width: auto;
+  }
+  
+  .settings-actions {
+    flex-direction: column;
+  }
+  
+  .file-input-btn {
+    justify-content: center;
+  }
+}
