@@ -110,7 +110,6 @@ const FlashCard = ({ card, onRating, isFlipped, onFlip }) => {
         {showRating && (
           <div className="rating-overlay">
           <div className="rating-section">
-            <h3>How well did you know this?</h3>
             <div className="rating-buttons">
               <button 
                 className="rating-btn again"

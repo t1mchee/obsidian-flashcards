@@ -32,7 +32,7 @@
   right: 0;
   background: #2d2d2d;
   backdrop-filter: blur(15px);
-  padding: 20px 30px;
+  padding: 12px 30px;
   z-index: 50;
   animation: slideUp 0.3s ease-out;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
@@ -90,7 +90,7 @@
 }
 
 .card-content.with-rating-overlay {
-  padding-bottom: 140px; /* Space for rating overlay */
+  padding-bottom: 100px; /* Space for rating overlay */
 }
 
 .question-content {
@@ -490,13 +490,6 @@
   align-items: center;
 }
 
-.rating-section h3 {
-  font-size: 1.2rem;
-  color: #cccccc;
-  margin-bottom: 1rem;
-  font-weight: 600;
-}
-
 .rating-buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -510,7 +503,7 @@
   color: #cccccc;
   border: 1px solid #4e4e4e;
   border-radius: 6px;
-  padding: 0.75rem 0.5rem;
+  padding: 0.5rem 0.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -519,7 +512,7 @@
   gap: 0.25rem;
   font-weight: 600;
   font-size: 0.9rem;
-  min-height: 60px;
+  min-height: 50px;
 }
 
 .rating-btn:hover {
@@ -548,13 +541,13 @@
 }
 
 .rating-btn.good {
-  border-color: #ff8c42;
+  border-color: #27ae60;
 }
 
 .rating-btn.good:hover {
-  background: #ff8c42;
+  background: #27ae60;
   color: white;
-  border-color: #ff8c42;
+  border-color: #27ae60;
 }
 
 .rating-btn.easy {
