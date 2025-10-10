@@ -3,22 +3,16 @@ import MarkdownWithLatex from './MarkdownWithLatex';
 import { Eye, EyeOff } from 'lucide-react';
 import './FlashCard.css';
 
-const FlashCard = ({ card, onRating, isFlipped, onFlip }) => {
+const FlashCard = ({ card, onRating, isFlipped, onFlip, cardStatus }) => {
   const [showAnswer, setShowAnswer] = useState(false);
-  const [showRating, setShowRating] = useState(false);
 
   const handleFlip = () => {
     if (!showAnswer) {
       // Showing the answer for the first time
       setShowAnswer(true);
-      // Show rating buttons after a delay to let user read the answer
-      setTimeout(() => {
-        setShowRating(true);
-      }, 1500); // 1.5 second delay
     } else {
       // Going back to question
       setShowAnswer(false);
-      setShowRating(false);
     }
     
     if (onFlip) {
@@ -28,7 +22,6 @@ const FlashCard = ({ card, onRating, isFlipped, onFlip }) => {
 
   const handleRating = (quality) => {
     setShowAnswer(false);
-    setShowRating(false);
     if (onRating) {
       onRating(quality);
     }
@@ -43,8 +36,8 @@ const FlashCard = ({ card, onRating, isFlipped, onFlip }) => {
         handleFlip();
       }
       
-      // Rating hotkeys (only when rating is visible)
-      if (showRating) {
+      // Rating hotkeys (only when answer is visible)
+      if (showAnswer) {
         switch(event.key) {
           case '1':
             event.preventDefault();
@@ -73,14 +66,27 @@ const FlashCard = ({ card, onRating, isFlipped, onFlip }) => {
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [showAnswer, showRating]);
+  }, [showAnswer]);
+
+  const getStatusBadge = () => {
+    if (!cardStatus) return null;
+    
+    return (
+      <span className={`card-status-badge ${cardStatus.toLowerCase()}`}>
+        {cardStatus}
+      </span>
+    );
+  };
 
   return (
     <div className="flashcard">
       <div className="flashcard-inner">
         <div className="flashcard-front">
           <div className="card-header">
-            <h2 className="card-title">{card.title}</h2>
+            <div className="card-header-left">
+              {getStatusBadge()}
+              <h2 className="card-title">{card.title}</h2>
+            </div>
             <button 
               className="flip-button"
               onClick={handleFlip}
@@ -90,7 +96,7 @@ const FlashCard = ({ card, onRating, isFlipped, onFlip }) => {
             </button>
           </div>
           
-          <div className={`card-content ${showRating ? 'with-rating-overlay' : ''}`}>
+          <div className={`card-content ${showAnswer ? 'with-rating-overlay' : ''}`}>
             {!showAnswer && (
               <div className="question-content centered">
                 <h1 className="question-title">{card.title}</h1>
@@ -106,8 +112,8 @@ const FlashCard = ({ card, onRating, isFlipped, onFlip }) => {
           </div>
         </div>
 
-        {/* Answer section with rating buttons - only show after delay */}
-        {showRating && (
+        {/* Answer section with rating buttons - show immediately when answer is visible */}
+        {showAnswer && (
           <div className="rating-overlay">
           <div className="rating-section">
             <div className="rating-buttons">

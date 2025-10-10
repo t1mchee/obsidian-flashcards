@@ -49,12 +49,44 @@
   background: #2d2d2d;
 }
 
+.card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  justify-content: center;
+}
+
+.card-status-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.card-status-badge.new {
+  background: #007acc;
+  color: white;
+}
+
+.card-status-badge.learning {
+  background: #f14c4c;
+  color: white;
+}
+
+.card-status-badge.due {
+  background: #27ae60;
+  color: white;
+}
+
 .card-title {
   font-size: 1.8rem;
   font-weight: 700;
   color: #cccccc;
   margin: 0;
-  flex: 1;
   text-align: center;
 }
 

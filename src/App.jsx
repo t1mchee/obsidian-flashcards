@@ -200,9 +200,52 @@ const App = () => {
     );
   }
 
+  const getCardStatus = (card) => {
+    const progress = getCardProgress(card.id);
+    
+    if (!progress || progress.reviewCount === 0) {
+      return 'NEW';
+    }
+    
+    if (progress.interval < 21) { // Less than 3 weeks
+      return 'LEARNING';
+    }
+    
+    const nextReview = new Date(progress.nextReviewDate);
+    if (isCardDue(nextReview)) {
+      return 'DUE';
+    }
+    
+    return 'LEARNING';
+  };
+
+  const getQueueCounts = () => {
+    const progress = getCardProgress();
+    let newCount = 0;
+    let learningCount = 0;
+    let dueCount = 0;
+
+    notes.forEach(note => {
+      const cardProgress = progress[note.id];
+      const status = getCardStatus(note);
+      
+      if (status === 'NEW') {
+        newCount++;
+      } else if (status === 'LEARNING') {
+        learningCount++;
+      } else if (status === 'DUE') {
+        dueCount++;
+      }
+    });
+
+    return { newCount, learningCount, dueCount };
+  };
+
   if (isReviewing) {
     const currentCard = getCurrentCard();
     const progress = ((reviewStats.completed) / reviewStats.total) * 100;
+    const cardStatus = currentCard ? getCardStatus(currentCard) : null;
+    const queueCounts = getQueueCounts();
 
     return (
       <div className="review-container">
@@ -210,6 +253,21 @@ const App = () => {
           <button className="exit-btn" onClick={exitReview} title="Exit Review">
             <ArrowLeft size={20} />
           </button>
+          
+          <div className="queue-counters">
+            <div className="queue-item new">
+              <span className="queue-number">{queueCounts.newCount}</span>
+              <span className="queue-label">New</span>
+            </div>
+            <div className="queue-item learning">
+              <span className="queue-number">{queueCounts.learningCount}</span>
+              <span className="queue-label">Learn</span>
+            </div>
+            <div className="queue-item due">
+              <span className="queue-number">{queueCounts.dueCount}</span>
+              <span className="queue-label">Due</span>
+            </div>
+          </div>
           
           <div className="progress-info-vertical">
             <span className="progress-text">
@@ -229,6 +287,7 @@ const App = () => {
             <FlashCard 
               card={currentCard}
               onRating={handleCardRating}
+              cardStatus={cardStatus}
             />
           </div>
         )}
