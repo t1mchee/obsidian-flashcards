@@ -516,6 +516,26 @@
   font-weight: 500;
 }
 
+/* Obsidian image styling */
+.obsidian-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.image-placeholder {
+  background: #3e3e3e;
+  border: 2px dashed #666666;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  color: #999999;
+  font-size: 0.9rem;
+  margin: 1rem 0;
+}
+
 .rating-section {
   display: flex;
   flex-direction: column;

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Upload, FileText, X, AlertCircle, CheckCircle } from 'lucide-react';
+import { Upload, FileText, X, AlertCircle, CheckCircle, Image as ImageIcon } from 'lucide-react';
 import { parseMarkdownFiles, filterValidNotes } from '../utils/markdownParser';
 import { saveNotesData, getNotesData } from '../utils/storage';
+import { readImageFiles, saveImages, getImageStorageStats } from '../utils/imageStorage';
 import './FileUpload.css';
 
 const FileUpload = ({ onNotesLoaded, onClose, existingNotes = [] }) => {
@@ -9,6 +10,7 @@ const FileUpload = ({ onNotesLoaded, onClose, existingNotes = [] }) => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [parsing, setParsing] = useState(false);
   const [error, setError] = useState(null);
+  const [imageStats, setImageStats] = useState(getImageStorageStats());
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -109,6 +111,32 @@ const FileUpload = ({ onNotesLoaded, onClose, existingNotes = [] }) => {
     setError(null);
   };
 
+  const handleImageUpload = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setParsing(true);
+    setError(null);
+
+    try {
+      const images = await readImageFiles(files);
+      const success = saveImages(images);
+      
+      if (success) {
+        setImageStats(getImageStorageStats());
+        setError(`✅ ${Object.keys(images).length} image(s) uploaded successfully!`);
+      } else {
+        setError('Failed to save images. Storage quota may be exceeded.');
+      }
+    } catch (err) {
+      setError('Error uploading images: ' + err.message);
+    } finally {
+      setParsing(false);
+      // Reset input
+      e.target.value = '';
+    }
+  };
+
   return (
     <div className="file-upload-overlay">
       <div className="file-upload-modal">
@@ -200,6 +228,31 @@ const FileUpload = ({ onNotesLoaded, onClose, existingNotes = [] }) => {
               <span>Parsing files...</span>
             </div>
           )}
+
+          <div className="image-upload-section">
+            <div className="image-upload-header">
+              <div className="image-info">
+                <ImageIcon size={20} />
+                <span>Images: {imageStats.count} ({imageStats.estimatedSizeKB} KB)</span>
+              </div>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="file-input"
+                id="image-input-upload"
+                style={{ display: 'none' }}
+              />
+              <label htmlFor="image-input-upload" className="image-upload-btn">
+                <ImageIcon size={16} />
+                Update Images
+              </label>
+            </div>
+            <p className="image-hint">
+              Upload images from your Obsidian vault's image folder. Supports JPG, PNG, GIF, WebP.
+            </p>
+          </div>
 
           {uploadedFiles.length > 0 && !parsing && (
             <div className="upload-actions">

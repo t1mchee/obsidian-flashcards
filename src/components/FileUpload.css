@@ -320,6 +320,55 @@
   background: #0098ff;
 }
 
+.image-upload-section {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: #252525;
+  border-radius: 8px;
+  border: 1px solid #3e3e3e;
+}
+
+.image-upload-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.image-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #999999;
+  font-size: 0.9rem;
+}
+
+.image-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #007acc;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.image-upload-btn:hover {
+  background: #0098ff;
+}
+
+.image-hint {
+  margin: 0;
+  color: #666666;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
 /* Scrollbar styling */
 .modal-content::-webkit-scrollbar {
   width: 8px;

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import yaml from 'js-yaml';
+import { getImage } from '../utils/imageStorage';
 
 // Configure MathJax before it loads
 if (!window.MathJax) {
@@ -247,6 +248,43 @@ const processFastColorText = (text) => {
   return processed;
 };
 
+// Process Obsidian image embeds: ![[image.png]] and ![alt](path/image.png)
+const processImages = (text) => {
+  // First, handle Obsidian wiki-style images: ![[image.png]]
+  let processed = text.replace(/!\[\[([^\]]+)\]\]/g, (match, imagePath) => {
+    // Extract just the filename (remove any path)
+    const fileName = imagePath.trim();
+    
+    // Try to get the image from storage
+    const imageData = getImage(fileName);
+    
+    if (imageData) {
+      return `<img src="${imageData}" alt="${fileName}" class="obsidian-image" />`;
+    } else {
+      // Image not found - show placeholder
+      return `<div class="image-placeholder">📷 Image not found: ${fileName}</div>`;
+    }
+  });
+  
+  // Then, handle standard Markdown images: ![alt](path/image.png)
+  processed = processed.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, imagePath) => {
+    // Extract just the filename (remove any path like images/ or ../images/)
+    const fileName = imagePath.split('/').pop().trim();
+    
+    // Try to get the image from storage
+    const imageData = getImage(fileName);
+    
+    if (imageData) {
+      return `<img src="${imageData}" alt="${alt || fileName}" class="obsidian-image" />`;
+    } else {
+      // Image not found - show placeholder
+      return `<div class="image-placeholder">📷 Image not found: ${fileName}</div>`;
+    }
+  });
+  
+  return processed;
+};
+
 // Process Obsidian callouts (>[!type] syntax)
 const processCallouts = (text) => {
   const calloutTypes = {
@@ -376,6 +414,9 @@ const convertMarkdownToHtml = (text) => {
       
       // Handle Obsidian callouts first
       processed = processCallouts(processed);
+      
+      // Handle images (both Obsidian wiki-style and standard Markdown)
+      processed = processImages(processed);
       
       // Handle Fast Color Text plugin syntax: ==(color)text==
       processed = processFastColorText(processed);
