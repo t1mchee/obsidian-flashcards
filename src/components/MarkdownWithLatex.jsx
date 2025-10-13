@@ -201,33 +201,50 @@ const MarkdownWithLatex = ({ content, frontMatter = {} }) => {
 };
 
 
-// Process Fast Color Text plugin syntax: ==(color)text==
+// Process Fast Color Text plugin syntax: ==(color)text== and ~={color} for whole line
 const processFastColorText = (text) => {
-  // Match patterns like ==(red)text== or ==(#ff0000)text==
-  const colorTextRegex = /==\(([^)]+)\)([^=]+)==/g;
+  // Color map for named colors
+  const colorMap = {
+    'red': '#f14c4c',
+    'blue': '#007acc',
+    'green': '#27ae60',
+    'yellow': '#cca700',
+    'orange': '#ff8c42',
+    'purple': '#9b59b6',
+    'pink': '#d16d9e',
+    'cyan': '#17a2b8',
+    'gray': '#7f8c8d',
+    'grey': '#7f8c8d',
+    'black': '#000000',
+    'white': '#ffffff',
+  };
   
-  return text.replace(colorTextRegex, (match, color, content) => {
-    // Normalize color names and hex codes
-    const colorMap = {
-      'red': '#f14c4c',
-      'blue': '#007acc',
-      'green': '#ff8c42',
-      'yellow': '#cca700',
-      'orange': '#ff8c42',
-      'purple': '#9b59b6',
-      'pink': '#d16d9e',
-      'cyan': '#ff8c42',
-      'gray': '#7f8c8d',
-      'grey': '#7f8c8d',
-      'black': '#000000',
-      'white': '#ffffff',
-    };
-    
+  // First, handle line-based color syntax: ~={color} at the start of a line
+  const lines = text.split('\n');
+  const processedLines = lines.map(line => {
+    // Match ~={color} or ~=(color) at the start of a line
+    const lineColorMatch = line.match(/^~=\{([^}]+)\}\s*(.*)$/);
+    if (lineColorMatch) {
+      const color = lineColorMatch[1].toLowerCase();
+      const content = lineColorMatch[2];
+      const finalColor = color.startsWith('#') ? color : (colorMap[color] || color);
+      return `<span class="fast-color-text" style="color: ${finalColor}; font-weight: 500;">${content}</span>`;
+    }
+    return line;
+  });
+  
+  let processed = processedLines.join('\n');
+  
+  // Then, handle inline color syntax: ==(color)text==
+  const colorTextRegex = /==\(([^)]+)\)([^=]+)==/g;
+  processed = processed.replace(colorTextRegex, (match, color, content) => {
     // Use the color directly if it's a hex code, otherwise look it up in the map
     const finalColor = color.startsWith('#') ? color : (colorMap[color.toLowerCase()] || color);
     
     return `<span class="fast-color-text" style="color: ${finalColor}; font-weight: 500;">${content.trim()}</span>`;
   });
+  
+  return processed;
 };
 
 // Process Obsidian callouts (>[!type] syntax)
