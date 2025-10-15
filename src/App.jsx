@@ -14,6 +14,8 @@ import {
   saveReviewHistory, 
   getNotesData 
 } from './utils/storage';
+import { hasVaultAccess, writeFileToVault } from './utils/fileSystemAccess';
+import { generateMarkdownWithProgress } from './utils/fileExporter';
 import { ArrowLeft, RotateCcw, CheckCircle } from 'lucide-react';
 import './App.css';
 
@@ -117,7 +119,7 @@ const App = () => {
     });
   };
 
-  const handleCardRating = (quality) => {
+  const handleCardRating = async (quality) => {
     const cardsToReview = getCardsToReview(reviewMode);
     const currentCard = cardsToReview[currentCardIndex];
     
@@ -147,6 +149,7 @@ const App = () => {
       lastReviewedAt: new Date().toISOString()
     };
 
+    // Save to localStorage
     saveCardProgress(updatedProgress);
 
     // Save review history
@@ -157,6 +160,19 @@ const App = () => {
       interval: newInterval,
       easeFactor: easeFactor
     });
+
+    // Auto-save to vault if connected
+    if (hasVaultAccess()) {
+      try {
+        const markdown = generateMarkdownWithProgress(currentCard, updatedProgress);
+        const fileName = currentCard.originalFileName || `${currentCard.title}.md`;
+        await writeFileToVault(fileName, markdown);
+        console.log(`✅ Auto-saved ${fileName} to vault`);
+      } catch (error) {
+        console.warn('Failed to auto-save to vault:', error);
+        // Don't block the review flow if file save fails
+      }
+    }
 
     // Update review stats
     setReviewStats(prev => ({
@@ -288,6 +304,7 @@ const App = () => {
               card={currentCard}
               onRating={handleCardRating}
               cardStatus={cardStatus}
+              vaultPath={null} // Browsers don't expose full path for security
             />
           </div>
         )}

@@ -57,6 +57,32 @@
   justify-content: center;
 }
 
+.card-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-button {
+  background: #3e3e3e;
+  color: #cccccc;
+  border: 1px solid #4e4e4e;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon-button:hover {
+  background: #4e4e4e;
+  border-color: #007acc;
+  color: #007acc;
+}
+
 .card-status-badge {
   padding: 0.35rem 0.75rem;
   border-radius: 4px;

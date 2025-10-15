@@ -57,11 +57,15 @@ export function parseMarkdownFile(fileContent, fileName) {
       .replace(/\n{3,}/g, '\n\n')  // Replace 3+ newlines with 2
       .trim();
     
+    // Extract spaced repetition data from frontmatter if present
+    const srProgress = extractSRProgress(frontMatter);
+    
     return {
       title: title.trim(),
       content: cleanContent,
       frontMatter,
-      originalFileName: fileName
+      originalFileName: fileName,
+      srProgress // Embedded SR data from file
     };
   } catch (error) {
     console.error('Error parsing markdown file:', error);
@@ -135,6 +139,28 @@ export function filterValidNotes(notes, options = {}) {
     
     return true;
   });
+}
+
+/**
+ * Extract spaced repetition progress from frontmatter
+ * @param {object} frontMatter - Parsed YAML frontmatter
+ * @returns {object|null} - SR progress data or null if not present
+ */
+function extractSRProgress(frontMatter) {
+  // Check if SR fields are present
+  if (!frontMatter.sr_interval && !frontMatter.sr_review_count) {
+    return null;
+  }
+  
+  return {
+    interval: frontMatter.sr_interval || 0,
+    easeFactor: frontMatter.sr_ease_factor || 2.5,
+    reviewCount: frontMatter.sr_review_count || 0,
+    correctCount: frontMatter.sr_correct_count || 0,
+    nextReviewDate: frontMatter.sr_next_review || null,
+    lastReviewedAt: frontMatter.sr_last_reviewed || null,
+    lastUpdated: frontMatter.sr_last_updated || null
+  };
 }
 
 /**

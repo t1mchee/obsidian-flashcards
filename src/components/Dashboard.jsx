@@ -9,10 +9,21 @@ import {
   Download,
   RotateCcw,
   ListChecks,
-  FilePlus
+  FilePlus,
+  FolderOpen,
+  Link as LinkIcon,
+  XCircle
 } from 'lucide-react';
 import CardSelector from './CardSelector';
 import { getCardProgress, getReviewHistory, getSettings, saveSettings, clearAllData, exportData, importData } from '../utils/storage';
+import { 
+  isFileSystemAccessSupported, 
+  hasVaultAccess, 
+  requestVaultAccess, 
+  restoreVaultAccess,
+  clearVaultAccess 
+} from '../utils/fileSystemAccess';
+import { exportModifiedCards } from '../utils/fileExporter';
 import './Dashboard.css';
 
 const Dashboard = ({ notes, onStartReview, onLoadNotes }) => {
@@ -30,11 +41,63 @@ const Dashboard = ({ notes, onStartReview, onLoadNotes }) => {
   });
   const [showSettings, setShowSettings] = useState(false);
   const [showCardSelector, setShowCardSelector] = useState(false);
+  const [vaultConnected, setVaultConnected] = useState(false);
+  const [fsApiSupported, setFsApiSupported] = useState(false);
+  const [modifiedCardsCount, setModifiedCardsCount] = useState(0);
 
   useEffect(() => {
     loadStats();
     loadSettings();
+    checkVaultConnection();
+    checkFileSystemSupport();
   }, [notes]);
+
+  const checkFileSystemSupport = () => {
+    setFsApiSupported(isFileSystemAccessSupported());
+  };
+
+  const checkVaultConnection = async () => {
+    if (isFileSystemAccessSupported()) {
+      try {
+        const restored = await restoreVaultAccess();
+        setVaultConnected(!!restored);
+      } catch (error) {
+        setVaultConnected(false);
+      }
+    }
+  };
+
+  const handleConnectVault = async () => {
+    try {
+      await requestVaultAccess();
+      setVaultConnected(true);
+      alert('✅ Connected to Obsidian vault! Files will auto-update after reviews.');
+    } catch (error) {
+      alert('Failed to connect to vault. Make sure you selected a folder.');
+    }
+  };
+
+  const handleDisconnectVault = () => {
+    clearVaultAccess();
+    setVaultConnected(false);
+  };
+
+  const handleExportCards = async () => {
+    try {
+      const progress = getCardProgress();
+      const cardsToExport = notes.filter(note => progress[note.id]);
+      
+      if (cardsToExport.length === 0) {
+        alert('No cards have been reviewed yet.');
+        return;
+      }
+      
+      const count = await exportModifiedCards(cardsToExport, progress, true);
+      alert(`✅ Exported ${count} card(s) as ZIP file!`);
+    } catch (error) {
+      alert('Failed to export cards: ' + error.message);
+    }
+  };
 
   const loadStats = () => {
     const progress = getCardProgress();
@@ -210,6 +273,43 @@ const Dashboard = ({ notes, onStartReview, onLoadNotes }) => {
               </div>
             </div>
           </div>
+
+          {/* Vault Connection Status */}
+          {fsApiSupported && (
+            <div className="vault-connection-banner">
+              {vaultConnected ? (
+                <div className="connection-status connected">
+                  <LinkIcon size={20} />
+                  <span>Connected to Obsidian vault • Auto-sync enabled</span>
+                  <button className="link-btn" onClick={handleDisconnectVault}>
+                    <XCircle size={16} />
+                    Disconnect
+                  </button>
+                </div>
+              ) : (
+                <div className="connection-status disconnected">
+                  <FolderOpen size={20} />
+                  <span>Connect to your Obsidian vault for automatic file updates</span>
+                  <button className="connect-btn" onClick={handleConnectVault}>
+                    <LinkIcon size={16} />
+                    Connect Vault
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Export Button (for non-connected or unsupported browsers) */}
+          {!vaultConnected && stats.reviewedToday > 0 && (
+            <div className="export-reminder">
+              <Upload size={20} />
+              <span>{stats.reviewedToday} card(s) reviewed. Export to save progress to files.</span>
+              <button className="export-btn" onClick={handleExportCards}>
+                <Download size={16} />
+                Export as ZIP
+              </button>
+            </div>
+          )}
 
           {/* Progress Bar */}
           {stats.totalCards > 0 && (

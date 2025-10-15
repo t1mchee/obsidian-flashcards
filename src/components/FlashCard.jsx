@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import MarkdownWithLatex from './MarkdownWithLatex';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, ExternalLink } from 'lucide-react';
 import './FlashCard.css';
 
-const FlashCard = ({ card, onRating, isFlipped, onFlip, cardStatus }) => {
+const FlashCard = ({ card, onRating, isFlipped, onFlip, cardStatus, vaultPath }) => {
   const [showAnswer, setShowAnswer] = useState(false);
 
   const handleFlip = () => {
@@ -78,6 +78,25 @@ const FlashCard = ({ card, onRating, isFlipped, onFlip, cardStatus }) => {
     );
   };
 
+  const openInObsidian = () => {
+    // Obsidian URL scheme: obsidian://open?vault=VaultName&file=path/to/file.md
+    // Or simpler: obsidian://open?path=/absolute/path/to/file.md
+    
+    const fileName = card.originalFileName || `${card.title}.md`;
+    
+    if (vaultPath) {
+      // If we have the vault path from File System API
+      const filePath = `${vaultPath}/${fileName}`;
+      const url = `obsidian://open?path=${encodeURIComponent(filePath)}`;
+      window.open(url, '_blank');
+    } else {
+      // Fallback: try to open by filename only
+      // User needs to have the vault open in Obsidian
+      const url = `obsidian://open?file=${encodeURIComponent(fileName)}`;
+      window.open(url, '_blank');
+    }
+  };
+
   return (
     <div className="flashcard">
       <div className="flashcard-inner">
@@ -87,13 +106,22 @@ const FlashCard = ({ card, onRating, isFlipped, onFlip, cardStatus }) => {
               {getStatusBadge()}
               <h2 className="card-title">{card.title}</h2>
             </div>
-            <button 
-              className="flip-button"
-              onClick={handleFlip}
-              title={showAnswer ? "Show question" : "Show answer"}
-            >
-              {showAnswer ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
+            <div className="card-header-actions">
+              <button 
+                className="icon-button"
+                onClick={openInObsidian}
+                title="Edit in Obsidian"
+              >
+                <ExternalLink size={18} />
+              </button>
+              <button 
+                className="flip-button"
+                onClick={handleFlip}
+                title={showAnswer ? "Show question" : "Show answer"}
+              >
+                {showAnswer ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
           
           <div className={`card-content ${showAnswer ? 'with-rating-overlay' : ''}`}>
