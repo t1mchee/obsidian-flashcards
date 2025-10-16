@@ -123,6 +123,17 @@
   cursor: pointer;
 }
 
+.upload-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.upload-buttons > div {
+  position: relative;
+}
+
 .browse-btn {
   background: #007acc;
   color: white;
@@ -136,11 +147,20 @@
   display: inline-block;
 }
 
+.browse-btn.folder-btn {
+  background: #ff8c42;
+}
+
+.browse-btn.folder-btn:hover {
+  background: #ff7822;
+}
+
 .browse-btn:hover {
   background: #0098ff;
 }
 
-#file-input-upload {
+#file-input-upload,
+#folder-input-upload {
   display: none;
 }
 

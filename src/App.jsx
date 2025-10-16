@@ -12,8 +12,10 @@ import {
   saveCardProgress, 
   getCardProgress, 
   saveReviewHistory, 
-  getNotesData 
+  getNotesData,
+  saveNotesData
 } from './utils/storage';
+import yaml from 'js-yaml';
 import { hasVaultAccess, writeFileToVault } from './utils/fileSystemAccess';
 import { generateMarkdownWithProgress } from './utils/fileExporter';
 import { ArrowLeft, RotateCcw, CheckCircle } from 'lucide-react';
@@ -36,19 +38,82 @@ const App = () => {
     loadNotes();
   }, []);
 
+  const parseFrontmatter = (content) => {
+    if (!content || !content.trim().startsWith('---')) {
+      return { data: {}, content };
+    }
+
+    try {
+      const lines = content.split('\n');
+      let inFrontmatter = false;
+      let frontmatterLines = [];
+      let contentStart = 0;
+
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].trim() === '---') {
+          if (!inFrontmatter) {
+            inFrontmatter = true;
+          } else {
+            // Found closing ---
+            contentStart = i + 1;
+            break;
+          }
+        } else if (inFrontmatter) {
+          frontmatterLines.push(lines[i]);
+        }
+      }
+
+      const yamlContent = frontmatterLines.join('\n');
+      const parsedData = yaml.load(yamlContent) || {};
+      const remainingContent = lines.slice(contentStart).join('\n').trim();
+
+      return { data: parsedData, content: remainingContent };
+    } catch (e) {
+      console.warn('Failed to parse frontmatter:', e);
+      return { data: {}, content };
+    }
+  };
+
   const loadNotes = () => {
     const savedNotes = getNotesData();
     if (savedNotes.length > 0) {
-      // Check if notes need frontMatter migration
-      const needsMigration = savedNotes.some(note => !note.hasOwnProperty('frontMatter'));
+      // Check if notes need frontMatter migration - parse from content if empty
+      const needsMigration = savedNotes.some(note => 
+        !note.frontMatter || Object.keys(note.frontMatter).length === 0
+      );
+      
       if (needsMigration) {
-        console.log('Notes need frontMatter migration');
-        // For now, just add empty frontMatter to old notes
-        const migratedNotes = savedNotes.map(note => ({
-          ...note,
-          frontMatter: note.frontMatter || {}
-        }));
+        console.log('Migrating frontMatter from content...');
+        const migratedNotes = savedNotes.map(note => {
+          // If frontMatter is empty but content has YAML, extract it
+          if ((!note.frontMatter || Object.keys(note.frontMatter).length === 0) && 
+              note.content && note.content.trim().startsWith('---')) {
+            try {
+              const parsed = parseFrontmatter(note.content);
+              console.log(`Migrated frontMatter for: ${note.title}`, parsed.data);
+              return {
+                ...note,
+                frontMatter: parsed.data,
+                content: parsed.content // Update content to remove frontmatter
+              };
+            } catch (e) {
+              console.warn(`Failed to parse frontmatter for ${note.title}:`, e);
+              return {
+                ...note,
+                frontMatter: note.frontMatter || {}
+              };
+            }
+          }
+          return {
+            ...note,
+            frontMatter: note.frontMatter || {}
+          };
+        });
+        
+        // Save the migrated notes
+        saveNotesData(migratedNotes);
         setNotes(migratedNotes);
+        console.log('Migration complete!');
       } else {
         setNotes(savedNotes);
       }

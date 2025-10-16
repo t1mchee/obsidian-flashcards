@@ -126,10 +126,13 @@ const FlashCard = ({ card, onRating, isFlipped, onFlip, cardStatus, vaultPath })
           
           <div className={`card-content ${showAnswer ? 'with-rating-overlay' : ''}`}>
             {!showAnswer && (
-              <div className="question-content centered">
-                <h1 className="question-title">{card.title}</h1>
-                <p className="question-hint">Press <kbd>Space</kbd> or click the eye icon to reveal the answer</p>
-              </div>
+              <>
+                <MarkdownWithLatex content="" frontMatter={card.frontMatter || {}} />
+                <div className="question-content centered">
+                  <h1 className="question-title">{card.title}</h1>
+                  <p className="question-hint">Press <kbd>Space</kbd> or click the eye icon to reveal the answer</p>
+                </div>
+              </>
             )}
             
             {showAnswer && (

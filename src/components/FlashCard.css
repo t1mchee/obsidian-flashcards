@@ -222,7 +222,7 @@
 
 .markdown-content {
   font-size: 1.1rem;
-  line-height: 1.6;
+  line-height: 1.5;
   color: #2c3e50;
   width: 100%;
   overflow-x: auto;
@@ -235,22 +235,38 @@
 .markdown-content h5,
 .markdown-content h6 {
   color: #2c3e50;
-  margin-top: 1.5rem;
-  margin-bottom: 1rem;
+  margin-top: 0.8rem;
+  margin-bottom: 0.2rem;
+  line-height: 1.3;
 }
 
 .markdown-content p {
-  margin-bottom: 1rem;
+  margin-bottom: 0.1rem;
+  margin-top: 0;
 }
 
 .markdown-content ul,
 .markdown-content ol {
-  margin-bottom: 1rem;
+  margin-bottom: 0.4rem;
+  margin-top: 0.2rem;
   padding-left: 2rem;
 }
 
 .markdown-content li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.1rem;
+  line-height: 1.4;
+}
+
+.markdown-content hr {
+  border: none;
+  border-top: 1px solid #d0d0d0;
+  margin: 1rem 0;
+}
+
+.markdown-content br {
+  display: block;
+  content: "";
+  margin-top: 0.2rem;
 }
 
 .markdown-content code {

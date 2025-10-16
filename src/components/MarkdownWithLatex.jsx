@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import yaml from 'js-yaml';
-import { getImage } from '../utils/imageStorage';
+import { getImage } from '../utils/imageStorageDB';
 
 // Configure MathJax before it loads
 if (!window.MathJax) {
@@ -64,25 +64,81 @@ const MarkdownWithLatex = ({ content, frontMatter = {} }) => {
   const containerRef = useRef(null);
   const mathJaxLoadedRef = useRef(false);
   const [parsedFrontMatter, setParsedFrontMatter] = useState(frontMatter);
+  const [imageCache, setImageCache] = useState({});
 
   // Parse frontmatter from content if it exists (for old notes)
   useEffect(() => {
-    if (content && content.trim().startsWith('---')) {
-      try {
-        const parsed = parseFrontmatter(content);
-        if (Object.keys(parsed.data).length > 0) {
-          setParsedFrontMatter({ ...frontMatter, ...parsed.data });
-        } else {
-          setParsedFrontMatter(frontMatter);
-        }
-      } catch (e) {
-        console.warn('Failed to parse frontmatter from content:', e);
+    // If content is empty or doesn't have frontmatter, just use the prop
+    if (!content || !content.trim().startsWith('---')) {
+      setParsedFrontMatter(frontMatter);
+      return;
+    }
+    
+    // Otherwise parse from content
+    try {
+      const parsed = parseFrontmatter(content);
+      if (Object.keys(parsed.data).length > 0) {
+        setParsedFrontMatter({ ...frontMatter, ...parsed.data });
+      } else {
         setParsedFrontMatter(frontMatter);
       }
-    } else {
+    } catch (e) {
+      console.warn('Failed to parse frontmatter from content:', e);
       setParsedFrontMatter(frontMatter);
     }
   }, [content, frontMatter]);
+
+  // Load images referenced in content
+  useEffect(() => {
+    const loadImages = async () => {
+      if (!content) return;
+      
+      // Extract all image references
+      const imageRefs = [];
+      const wikiImages = content.match(/!\[\[([^\]]+)\]\]/g);
+      const mdImages = content.match(/!\[([^\]]*)\]\(([^)]+)\)/g);
+      
+      console.log('Loading images for content. Wiki images:', wikiImages, 'MD images:', mdImages);
+      
+      if (wikiImages) {
+        wikiImages.forEach(match => {
+          const fileName = match.match(/!\[\[([^\]]+)\]\]/)[1].trim();
+          imageRefs.push(fileName);
+          imageRefs.push(fileName.split('/').pop()); // Also try just filename
+        });
+      }
+      
+      if (mdImages) {
+        mdImages.forEach(match => {
+          const imagePath = match.match(/!\[([^\]]*)\]\(([^)]+)\)/)[2];
+          imageRefs.push(imagePath);
+          imageRefs.push(imagePath.split('/').pop()); // Also try just filename
+        });
+      }
+      
+      console.log('Image refs to load:', imageRefs);
+      
+      if (imageRefs.length > 0) {
+        const cache = {};
+        await Promise.all(
+          imageRefs.map(async (ref) => {
+            console.log(`Trying to load image: ${ref}`);
+            const imageData = await getImage(ref);
+            if (imageData) {
+              console.log(`✓ Loaded image: ${ref}`);
+              cache[ref] = imageData;
+            } else {
+              console.log(`✗ Failed to load image: ${ref}`);
+            }
+          })
+        );
+        console.log('Image cache populated with:', Object.keys(cache));
+        setImageCache(cache);
+      }
+    };
+    
+    loadImages();
+  }, [content]);
 
   useEffect(() => {
     // Load MathJax if not already loaded
@@ -111,7 +167,7 @@ const MarkdownWithLatex = ({ content, frontMatter = {} }) => {
       
       return () => clearInterval(checkInterval);
     }
-  }, [content]);
+  }, [content, imageCache]); // Re-render when imageCache changes
 
   const renderContent = () => {
     if (!containerRef.current) return;
@@ -137,7 +193,7 @@ const MarkdownWithLatex = ({ content, frontMatter = {} }) => {
 
   const processContent = (text) => {
     // Convert markdown to HTML first
-    let processed = convertMarkdownToHtml(text);
+    let processed = convertMarkdownToHtml(text, imageCache);
     
     return processed;
   };
@@ -249,14 +305,14 @@ const processFastColorText = (text) => {
 };
 
 // Process Obsidian image embeds: ![[image.png]] and ![alt](path/image.png)
-const processImages = (text) => {
+const processImages = (text, imageCache) => {
   // First, handle Obsidian wiki-style images: ![[image.png]]
   let processed = text.replace(/!\[\[([^\]]+)\]\]/g, (match, imagePath) => {
     // Extract just the filename (remove any path)
     const fileName = imagePath.trim();
     
-    // Try to get the image from storage
-    const imageData = getImage(fileName);
+    // Try to get the image from cache
+    const imageData = imageCache[fileName] || imageCache[fileName.split('/').pop()];
     
     if (imageData) {
       return `<img src="${imageData}" alt="${fileName}" class="obsidian-image" />`;
@@ -271,8 +327,8 @@ const processImages = (text) => {
     // Extract just the filename (remove any path like images/ or ../images/)
     const fileName = imagePath.split('/').pop().trim();
     
-    // Try to get the image from storage
-    const imageData = getImage(fileName);
+    // Try to get the image from cache
+    const imageData = imageCache[fileName] || imageCache[imagePath];
     
     if (imageData) {
       return `<img src="${imageData}" alt="${alt || fileName}" class="obsidian-image" />`;
@@ -361,7 +417,7 @@ const processCallouts = (text) => {
 };
 
 // Simple markdown to HTML converter for basic formatting
-const convertMarkdownToHtml = (text) => {
+const convertMarkdownToHtml = (text, imageCache = {}) => {
   // Split by math delimiters to preserve them
   const parts = [];
   let currentIndex = 0;
@@ -415,14 +471,18 @@ const convertMarkdownToHtml = (text) => {
       // Handle Obsidian callouts first
       processed = processCallouts(processed);
       
-      // Handle images (both Obsidian wiki-style and standard Markdown)
-      processed = processImages(processed);
+      // Handle images (both Obsidian wiki-style and standard Markdown) - pass imageCache from outer scope
+      processed = processImages(processed, imageCache);
       
       // Handle Fast Color Text plugin syntax: ==(color)text==
       processed = processFastColorText(processed);
       
       // Apply markdown formatting
       processed = processed
+        // Horizontal rules (must be before headers to avoid conflicts)
+        .replace(/^---+\s*$/gm, '<hr>')
+        .replace(/^\*\*\*+\s*$/gm, '<hr>')
+        .replace(/^___+\s*$/gm, '<hr>')
         // Headers
         .replace(/^### (.*$)/gim, '<h3>$1</h3>')
         .replace(/^## (.*$)/gim, '<h2>$1</h2>')
@@ -459,7 +519,8 @@ const convertMarkdownToHtml = (text) => {
           if (line.trim()) {
             processedLines.push(line);
           } else {
-            processedLines.push('<br>');
+            // Only add a single break for empty lines, not double
+            processedLines.push('');
           }
         }
       }
@@ -469,7 +530,10 @@ const convertMarkdownToHtml = (text) => {
         processedLines.push(listHtml + '</ul>');
       }
       
-      processed = processedLines.join('<br>');
+      // Join lines with single line breaks, filtering out consecutive empty strings
+      processed = processedLines
+        .filter((line, i, arr) => line !== '' || arr[i-1] !== '')
+        .join('<br>');
       
       // Restore inline math
       inlineMathParts.forEach((math, index) => {

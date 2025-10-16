@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Upload, FileText, X, AlertCircle, CheckCircle, Image as ImageIcon } from 'lucide-react';
 import { parseMarkdownFiles, filterValidNotes } from '../utils/markdownParser';
 import { saveNotesData, getNotesData } from '../utils/storage';
-import { readImageFiles, saveImages, getImageStorageStats } from '../utils/imageStorage';
+import { readImageFiles, saveImages, getImageStorageStats } from '../utils/imageStorageDB';
 import './FileUpload.css';
 
 const FileUpload = ({ onNotesLoaded, onClose, existingNotes = [] }) => {
@@ -10,7 +10,12 @@ const FileUpload = ({ onNotesLoaded, onClose, existingNotes = [] }) => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [parsing, setParsing] = useState(false);
   const [error, setError] = useState(null);
-  const [imageStats, setImageStats] = useState(getImageStorageStats());
+  const [imageStats, setImageStats] = useState({ count: 0, estimatedSizeKB: 0 });
+
+  // Load image stats on mount
+  React.useEffect(() => {
+    getImageStorageStats().then(stats => setImageStats(stats));
+  }, []);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -22,19 +27,70 @@ const FileUpload = ({ onNotesLoaded, onClose, existingNotes = [] }) => {
     }
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
     
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFiles(e.dataTransfer.files);
+      const allFiles = Array.from(e.dataTransfer.files);
+      
+      // Separate markdown files and image files
+      const markdownFiles = allFiles.filter(file => 
+        file.type === 'text/markdown' || file.name.endsWith('.md')
+      );
+      
+      const imageFiles = allFiles.filter(file => 
+        file.type.startsWith('image/') || 
+        /\.(jpg|jpeg|png|gif|webp)$/i.test(file.name)
+      );
+      
+      // Process images first if any are found
+      if (imageFiles.length > 0) {
+        console.log(`Found ${imageFiles.length} image(s), loading...`);
+        await handleImageUpload({ target: { files: imageFiles } });
+      }
+      
+      // Then process markdown files
+      if (markdownFiles.length > 0) {
+        await handleFiles(markdownFiles);
+      } else if (imageFiles.length === 0) {
+        // No valid files found
+        setError('Please drop markdown files (.md) or a folder containing markdown files');
+      }
     }
   };
 
   const handleFileInput = (e) => {
     if (e.target.files && e.target.files[0]) {
       handleFiles(e.target.files);
+    }
+  };
+
+  const handleFolderInput = async (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const allFiles = Array.from(e.target.files);
+      
+      // Separate markdown files and image files
+      const markdownFiles = allFiles.filter(file => 
+        file.type === 'text/markdown' || file.name.endsWith('.md')
+      );
+      
+      const imageFiles = allFiles.filter(file => 
+        file.type.startsWith('image/') || 
+        /\.(jpg|jpeg|png|gif|webp)$/i.test(file.name)
+      );
+      
+      // Process images first if any are found
+      if (imageFiles.length > 0) {
+        console.log(`Found ${imageFiles.length} image(s) in folder, loading...`);
+        await handleImageUpload({ target: { files: imageFiles } });
+      }
+      
+      // Then process markdown files
+      if (markdownFiles.length > 0) {
+        await handleFiles(markdownFiles);
+      }
     }
   };
 
@@ -81,16 +137,34 @@ const FileUpload = ({ onNotesLoaded, onClose, existingNotes = [] }) => {
       })));
 
       if (validNotes.length > 0) {
-        // Merge with existing notes, avoiding duplicates by title
-        const existingTitles = new Set(existingNotes.map(note => note.title));
-        const newNotes = validNotes.filter(note => !existingTitles.has(note.title));
-        const allNotes = [...existingNotes, ...newNotes];
+        // Merge with existing notes, updating frontMatter for existing cards
+        const existingMap = new Map(existingNotes.map(note => [note.title, note]));
+        const newNotes = [];
+        const updatedNotes = [];
+        
+        validNotes.forEach(note => {
+          const existing = existingMap.get(note.title);
+          if (existing) {
+            // Update existing note with new frontMatter and content, but keep progress
+            existingMap.set(note.title, {
+              ...existing,
+              content: note.content,
+              frontMatter: note.frontMatter,
+              srProgress: note.srProgress || existing.srProgress
+            });
+            updatedNotes.push(note.title);
+          } else {
+            newNotes.push(note);
+          }
+        });
+        
+        const allNotes = [...Array.from(existingMap.values()), ...newNotes];
         
         saveNotesData(allNotes);
         onNotesLoaded(allNotes);
         
-        if (newNotes.length < validNotes.length) {
-          setError(`${validNotes.length - newNotes.length} duplicate(s) skipped. ${newNotes.length} new card(s) added.`);
+        if (updatedNotes.length > 0) {
+          setError(`${updatedNotes.length} card(s) updated, ${newNotes.length} new card(s) added.`);
         }
       } else {
         setError('No valid notes found. Please check that your files contain titles and content.');
@@ -119,12 +193,16 @@ const FileUpload = ({ onNotesLoaded, onClose, existingNotes = [] }) => {
     setError(null);
 
     try {
+      console.log(`Processing ${files.length} file(s) for image upload...`);
       const images = await readImageFiles(files);
-      const success = saveImages(images);
+      console.log('Images read:', Object.keys(images));
+      const success = await saveImages(images);
       
       if (success) {
-        setImageStats(getImageStorageStats());
-        setError(`✅ ${Object.keys(images).length} image(s) uploaded successfully!`);
+        const stats = await getImageStorageStats();
+        setImageStats(stats);
+        console.log(`Images saved successfully. Total in storage: ${stats.count}, Size: ${stats.estimatedSizeKB}KB`);
+        setError(`✅ ${Object.keys(images).length} image(s) uploaded successfully! Total: ${stats.count} images (${stats.estimatedSizeKB}KB)`);
       } else {
         setError('Failed to save images. Storage quota may be exceeded.');
       }
@@ -162,19 +240,37 @@ const FileUpload = ({ onNotesLoaded, onClose, existingNotes = [] }) => {
               onDrop={handleDrop}
             >
               <Upload size={48} className="upload-icon" />
-              <h3>Drop your markdown files here</h3>
-              <p>Or click to browse and select files</p>
-              <input
-                type="file"
-                multiple
-                accept=".md,.markdown"
-                onChange={handleFileInput}
-                className="file-input"
-                id="file-input-upload"
-              />
-              <label htmlFor="file-input-upload" className="browse-btn">
-                Browse Files
-              </label>
+              <h3>Drop your markdown files or folder here</h3>
+              <p>Or click to browse and select files/folder</p>
+              <div className="upload-buttons">
+                <div>
+                  <input
+                    type="file"
+                    multiple
+                    accept=".md,.markdown"
+                    onChange={handleFileInput}
+                    className="file-input"
+                    id="file-input-upload"
+                  />
+                  <label htmlFor="file-input-upload" className="browse-btn">
+                    📄 Browse Files
+                  </label>
+                </div>
+                <div>
+                  <input
+                    type="file"
+                    webkitdirectory="true"
+                    directory="true"
+                    multiple
+                    onChange={handleFolderInput}
+                    className="file-input"
+                    id="folder-input-upload"
+                  />
+                  <label htmlFor="folder-input-upload" className="browse-btn folder-btn">
+                    📁 Browse Folder
+                  </label>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="files-list">

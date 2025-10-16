@@ -12,9 +12,13 @@ import {
   FilePlus,
   FolderOpen,
   Link as LinkIcon,
-  XCircle
+  XCircle,
+  Tag,
+  Table
 } from 'lucide-react';
 import CardSelector from './CardSelector';
+import TagSelector from './TagSelector';
+import CardBrowser from './CardBrowser';
 import { getCardProgress, getReviewHistory, getSettings, saveSettings, clearAllData, exportData, importData } from '../utils/storage';
 import { 
   isFileSystemAccessSupported, 
@@ -41,9 +45,12 @@ const Dashboard = ({ notes, onStartReview, onLoadNotes }) => {
   });
   const [showSettings, setShowSettings] = useState(false);
   const [showCardSelector, setShowCardSelector] = useState(false);
+  const [showTagSelector, setShowTagSelector] = useState(false);
+  const [showCardBrowser, setShowCardBrowser] = useState(false);
   const [vaultConnected, setVaultConnected] = useState(false);
   const [fsApiSupported, setFsApiSupported] = useState(false);
   const [modifiedCardsCount, setModifiedCardsCount] = useState(0);
+  const [vaultPath, setVaultPath] = useState('');
 
   useEffect(() => {
     loadStats();
@@ -61,6 +68,12 @@ const Dashboard = ({ notes, onStartReview, onLoadNotes }) => {
       try {
         const restored = await restoreVaultAccess();
         setVaultConnected(!!restored);
+        if (restored) {
+          // Try to get vault path
+          const { getVaultPath } = await import('../utils/fileSystemAccess');
+          const path = await getVaultPath();
+          setVaultPath(path || '');
+        }
       } catch (error) {
         setVaultConnected(false);
       }
@@ -366,6 +379,22 @@ const Dashboard = ({ notes, onStartReview, onLoadNotes }) => {
               <ListChecks size={20} />
               Select Cards to Study
             </button>
+
+            <button 
+              className="secondary-btn large select-cards-btn"
+              onClick={() => setShowTagSelector(true)}
+            >
+              <Tag size={20} />
+              Study by Tag
+            </button>
+
+            <button 
+              className="secondary-btn large select-cards-btn"
+              onClick={() => setShowCardBrowser(true)}
+            >
+              <Table size={20} />
+              Browse Cards
+            </button>
           </div>
         </>
       )}
@@ -442,6 +471,29 @@ const Dashboard = ({ notes, onStartReview, onLoadNotes }) => {
             onStartReview('custom', selectedNotes);
           }}
           onClose={() => setShowCardSelector(false)}
+        />
+      )}
+
+      {showTagSelector && (
+        <TagSelector
+          notes={notes}
+          onStartReview={(selectedNotes) => {
+            setShowTagSelector(false);
+            onStartReview('custom', selectedNotes);
+          }}
+          onClose={() => setShowTagSelector(false)}
+        />
+      )}
+
+      {showCardBrowser && (
+        <CardBrowser
+          notes={notes}
+          vaultPath={vaultPath}
+          onOpenCard={(card) => {
+            setShowCardBrowser(false);
+            onStartReview('custom', [card]);
+          }}
+          onClose={() => setShowCardBrowser(false)}
         />
       )}
     </div>
