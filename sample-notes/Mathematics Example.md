@@ -1,3 +1,10 @@
+---
+tags:
+  - Mathematics
+  - Physics
+  - Science
+---
+
 # Mathematics Example
 
 This note contains various mathematical formulas and equations using LaTeX notation.

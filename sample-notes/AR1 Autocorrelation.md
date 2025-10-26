@@ -1,3 +1,10 @@
+---
+tags:
+  - Statistics
+  - Econometrics
+  - TimeSeries
+---
+
 # AR1 Autocorrelation Derivation
 
 Multiply both sides by $y_{t-j}$ and take expectations:

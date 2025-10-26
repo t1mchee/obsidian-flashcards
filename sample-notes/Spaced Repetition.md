@@ -1,3 +1,10 @@
+---
+tags:
+  - Learning
+  - Memory
+  - Education
+---
+
 # Spaced Repetition
 
 Spaced repetition is a learning technique that incorporates increasing intervals of time between subsequent review of previously learned material.

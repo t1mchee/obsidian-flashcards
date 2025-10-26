@@ -135,16 +135,56 @@
   border-color: #5e5e5e;
 }
 
+.icon-button {
+  background: #3e3e3e;
+  color: #cccccc;
+  border: 1px solid #4e4e4e;
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 8px;
+}
+
+.icon-button:hover:not(:disabled) {
+  background: #4e4e4e;
+  border-color: #5e5e5e;
+}
+
+.icon-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.icon-button.spinning svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .card-content {
   flex: 1;
   padding: 40px;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   background: white;
   margin: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  /* Ensure smooth scrolling and prevent scroll chaining */
+  overscroll-behavior: contain;
 }
 
 .card-content.with-rating-overlay {
@@ -203,6 +243,9 @@
   max-width: 800px;
   margin: 0 auto;
   overflow-x: auto;
+  /* Prevent scroll trapping */
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: none;
 }
 
 .answer-indicator {
@@ -226,6 +269,9 @@
   color: #2c3e50;
   width: 100%;
   overflow-x: auto;
+  /* Prevent scroll trapping */
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: none;
 }
 
 .markdown-content h1,
@@ -301,6 +347,11 @@
   text-align: center;
   overflow-x: auto;
   padding: 0.5rem 0;
+  /* Prevent scroll trapping - only capture horizontal scroll, let vertical scroll pass through */
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: none;
+  /* Only show scrollbar when actually needed */
+  overflow-y: hidden;
 }
 
 /* MathJax inline math */

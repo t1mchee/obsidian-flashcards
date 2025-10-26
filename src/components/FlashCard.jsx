@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import MarkdownWithLatex from './MarkdownWithLatex';
-import { Eye, EyeOff, ExternalLink } from 'lucide-react';
+import { Eye, EyeOff, ExternalLink, RefreshCw } from 'lucide-react';
 import './FlashCard.css';
 
-const FlashCard = ({ card, onRating, isFlipped, onFlip, cardStatus, vaultPath }) => {
+const FlashCard = ({ card, onRating, isFlipped, onFlip, cardStatus, vaultPath, onReloadCard }) => {
   const [showAnswer, setShowAnswer] = useState(false);
+  const [isReloading, setIsReloading] = useState(false);
 
   const handleFlip = () => {
     if (!showAnswer) {
@@ -85,15 +86,32 @@ const FlashCard = ({ card, onRating, isFlipped, onFlip, cardStatus, vaultPath })
     const fileName = card.originalFileName || `${card.title}.md`;
     
     if (vaultPath) {
-      // If we have the vault path from File System API
+      // If we have the vault path from File System API, use absolute path
       const filePath = `${vaultPath}/${fileName}`;
       const url = `obsidian://open?path=${encodeURIComponent(filePath)}`;
+      console.log('Opening in Obsidian with absolute path:', url);
       window.open(url, '_blank');
     } else {
       // Fallback: try to open by filename only
       // User needs to have the vault open in Obsidian
       const url = `obsidian://open?file=${encodeURIComponent(fileName)}`;
+      console.log('Opening in Obsidian with filename:', url);
       window.open(url, '_blank');
+    }
+  };
+
+  const handleReloadCard = async () => {
+    if (!onReloadCard) return;
+    
+    setIsReloading(true);
+    try {
+      await onReloadCard(card);
+      // Show a brief success indicator
+      setTimeout(() => setIsReloading(false), 1000);
+    } catch (error) {
+      console.error('Error reloading card:', error);
+      alert('Failed to reload card: ' + error.message);
+      setIsReloading(false);
     }
   };
 
@@ -107,6 +125,14 @@ const FlashCard = ({ card, onRating, isFlipped, onFlip, cardStatus, vaultPath })
               <h2 className="card-title">{card.title}</h2>
             </div>
             <div className="card-header-actions">
+              <button 
+                className={`icon-button ${isReloading ? 'spinning' : ''}`}
+                onClick={handleReloadCard}
+                title="Reload card from file"
+                disabled={isReloading}
+              >
+                <RefreshCw size={18} />
+              </button>
               <button 
                 className="icon-button"
                 onClick={openInObsidian}

@@ -293,7 +293,8 @@ const processFastColorText = (text) => {
   let processed = processedLines.join('\n');
   
   // Then, handle inline color syntax: ==(color)text==
-  const colorTextRegex = /==\(([^)]+)\)([^=]+)==/g;
+  // Make the regex more flexible to handle various content
+  const colorTextRegex = /==\(([^)]+)\)(.*?)==/g;
   processed = processed.replace(colorTextRegex, (match, color, content) => {
     // Use the color directly if it's a hex code, otherwise look it up in the map
     const finalColor = color.startsWith('#') ? color : (colorMap[color.toLowerCase()] || color);

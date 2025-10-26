@@ -16,8 +16,9 @@ import {
   saveNotesData
 } from './utils/storage';
 import yaml from 'js-yaml';
-import { hasVaultAccess, writeFileToVault } from './utils/fileSystemAccess';
+import { hasVaultAccess, writeFileToVault, readFileFromVault, restoreVaultAccess } from './utils/fileSystemAccess';
 import { generateMarkdownWithProgress } from './utils/fileExporter';
+import { parseMarkdownFile } from './utils/markdownParser';
 import { ArrowLeft, RotateCcw, CheckCircle } from 'lucide-react';
 import './App.css';
 
@@ -28,6 +29,7 @@ const App = () => {
   const [customCards, setCustomCards] = useState([]); // For custom card selection
   const [isReviewing, setIsReviewing] = useState(false);
   const [showFileUpload, setShowFileUpload] = useState(false);
+  const [vaultPath, setVaultPath] = useState('');
   const [reviewStats, setReviewStats] = useState({
     completed: 0,
     total: 0,
@@ -36,7 +38,22 @@ const App = () => {
 
   useEffect(() => {
     loadNotes();
+    checkVaultAccess();
   }, []);
+
+  const checkVaultAccess = async () => {
+    try {
+      await restoreVaultAccess();
+      if (hasVaultAccess()) {
+        // Try to get vault path
+        const { getVaultPath } = await import('./utils/fileSystemAccess');
+        const path = await getVaultPath();
+        setVaultPath(path || '');
+      }
+    } catch (error) {
+      console.log('No vault access available');
+    }
+  };
 
   const parseFrontmatter = (content) => {
     if (!content || !content.trim().startsWith('---')) {
@@ -271,6 +288,94 @@ const App = () => {
     return cardsToReview[currentCardIndex] || null;
   };
 
+  const handleReloadCard = async (card) => {
+    console.log('Reloading card:', card.title);
+    
+    try {
+      const fileName = card.originalFileName || `${card.title}.md`;
+      
+      // Try to read from vault if connected
+      if (hasVaultAccess()) {
+        const fileData = await readFileFromVault(fileName);
+        
+        if (fileData && fileData.content) {
+          // Parse the updated content
+          const parsedNote = parseMarkdownFile(fileData.content, fileName);
+          
+          // Update the note in state, preserving the ID and progress
+          const updatedNotes = notes.map(note => 
+            note.id === card.id 
+              ? {
+                  ...note,
+                  title: parsedNote.title,
+                  content: parsedNote.content,
+                  frontMatter: parsedNote.frontMatter,
+                  srProgress: parsedNote.srProgress || note.srProgress
+                }
+              : note
+          );
+          
+          setNotes(updatedNotes);
+          saveNotesData(updatedNotes);
+          
+          console.log('✅ Card reloaded successfully from vault');
+          return;
+        }
+      }
+      
+      // Fallback: Prompt user to upload the specific file
+      return new Promise((resolve) => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.md,.markdown';
+        
+        input.onchange = async (e) => {
+          const file = e.target.files[0];
+          if (!file) {
+            resolve();
+            return;
+          }
+          
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const fileContent = event.target.result;
+            const parsedNote = parseMarkdownFile(fileContent, file.name);
+            
+            // Update the note in state
+            const updatedNotes = notes.map(note => 
+              note.id === card.id 
+                ? {
+                    ...note,
+                    title: parsedNote.title,
+                    content: parsedNote.content,
+                    frontMatter: parsedNote.frontMatter,
+                    originalFileName: file.name,
+                    srProgress: parsedNote.srProgress || note.srProgress
+                  }
+                : note
+            );
+            
+            setNotes(updatedNotes);
+            saveNotesData(updatedNotes);
+            
+            console.log('✅ Card reloaded successfully from uploaded file');
+            resolve();
+          };
+          
+          reader.readAsText(file);
+        };
+        
+        // If user cancels the file picker
+        input.oncancel = () => resolve();
+        
+        input.click();
+      });
+    } catch (error) {
+      console.error('Error reloading card:', error);
+      throw error;
+    }
+  };
+
   if (showFileUpload) {
     return (
       <FileUpload 
@@ -369,7 +474,8 @@ const App = () => {
               card={currentCard}
               onRating={handleCardRating}
               cardStatus={cardStatus}
-              vaultPath={null} // Browsers don't expose full path for security
+              vaultPath={vaultPath}
+              onReloadCard={handleReloadCard}
             />
           </div>
         )}

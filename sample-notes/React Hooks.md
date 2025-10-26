@@ -1,3 +1,10 @@
+---
+tags:
+  - React
+  - JavaScript
+  - Programming
+---
+
 # React Hooks
 
 React Hooks are functions that let you use state and other React features in functional components.
